@@ -8,6 +8,8 @@ Invoke-RestMethod get.scoop.sh | Invoke-Expression
 scoop install sudo gow
 ```
 ### 2. Install modules
+* [Posh-Git](http://dahlbyk.github.io/posh-git/)
+* [OhMyPosh](https://ohmyposh.dev/)  # Like [OhMyZSH](https://ohmyz.sh/) from Linux
 ```
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 Install-Module -Name "posh-git" -Force
