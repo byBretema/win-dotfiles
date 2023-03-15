@@ -33,8 +33,8 @@ New-Item -path "hkcr:\Applications\7zG.exe\shell\open\command" -value "`"${env:P
 Set-Service DiagTrack -StartupType Disabled
 New-ItemProperty -path "hklm:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -name "AllowTelemetry" -PropertyType DWORD -value 0 -Force
 # Enable 'Hybernate After' on laptops
-$isLaptop = ($null -ne (Get-WmiObject -Class win32_battery -ComputerName "localhost" -ErrorAction SilentlyContinue))
-if ($isLaptop)
+$IsLaptop = ($null -ne (Get-CimInstance -Class win32_battery))
+if ($IsLaptop)
 {
   REG ADD HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\238C9FA8-0AAD-41ED-83F4-97BE242C8F20\9d7815a6-7ee4-497e-8888-515a05f02364 /v Attributes /t REG_DWORD /d 2 /f
 }
