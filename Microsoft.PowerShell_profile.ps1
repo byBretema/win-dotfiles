@@ -47,11 +47,10 @@ Set-Alias cap Open-ActiveProject
 
 # Git stuff that doesn't fit into .gitconfig
 function gitit {
-	if (-not (Test-Path "./.git")) { Write-Output "fatal: not a git repository (or any of the parent directories): .git"; return; }
-	$http = ((((git remote -v)[0] -Split " ")[0] -Split "`t")[1])
-	$ssh = ($http -Split "@")[1].Replace(":", "/")
-	$ErrorActionPreference = "SilentlyContinue"; try { Start-Process "https://$http" } catch { Start-Process "https://$ssh" }
-	#if (-not $?) { $error.clear(); Start-Process "https://$ssh" -ErrorAction "Ignore" }
+	git remote > $null; if (-not $?) { return; }
+	$url = ((git remote -v) -Split "`t" -Split " ")[1]
+	if ($url -like "*@*") { $url  = ($url -Split "@")[1].Replace(":", "/") }
+	Start-Process "https://$url"
 }
 
 # Location management
@@ -98,7 +97,7 @@ function aaa { sudo -plz }
 function devices { mmc devmgmt.msc }
 function installFromUrl ($tag, $url) { $tmpFile = "${env:TEMP}\${tag}.exe"; Invoke-WebRequest -URI $url -OutFile $tmpFile; ./$tmpFile }
 
-# kill
+# Kill
 function ke { Stop-Process (Get-Process explorer).id }
 function killp { 
 	Get-Process "*$args*" -ErrorAction Ignore | ForEach-Object { Write-Output "$($_.Id)    $($_.ProcessName)" }; 
