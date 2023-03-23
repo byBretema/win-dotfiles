@@ -49,7 +49,7 @@ Set-Alias cap Open-ActiveProject
 function gitit {
 	git remote > $null; if (-not $?) { return; }
 	$url = ((git remote -v) -Split "`t" -Split " ")[1]
-	if ($url -like "*@*") { $url  = ($url -Split "@")[1].Replace(":", "/") }
+	if ($url -like "*git@*") { $url  = ($url -Split "@")[1].Replace(":", "/") }
 	Start-Process "https://$url"
 }
 
