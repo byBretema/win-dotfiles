@@ -54,3 +54,7 @@ if ($IsLaptop) {
     ### Enable 'Hybernate After'
     addRegDword "${PowerSettingsPath}\238C9FA8-0AAD-41ED-83F4-97BE242C8F20\9d7815a6-7ee4-497e-8888-515a05f02364" "Attributes" 2
 }
+
+# UTILITIES
+## Enable OCR for all available languages
+Get-WindowsCapability -Online | Where-Object { $_.Name -Like 'Language.OCR*' } | ForEach-Object { $_ | Add-WindowsCapability -Online }
