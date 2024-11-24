@@ -1,10 +1,4 @@
 
-## sudo is now a native feature of windows 11 24H2
-## check how to activate it from this script
-#### FIND REPLACES FOR:
-#### --> scoop install z posh-git oh-my-posh
-#### --> sudo scoop install -g FiraCode FiraCode-NF-Mono
-
 ######################################################
 ### WINGET Packages
 ######################################################
@@ -12,6 +6,8 @@
 function install_winget($package) {
     winget install --disable-interactivity --accept-package-agreements --accept-source-agreements -e --id "$package"
 }
+
+install_winget "Microsoft.PowerShell"             # Pwsh : Powershell 7
 
 # OS Utils
 #---------------------
@@ -49,7 +45,6 @@ install_winget "Obsidian.Obsidian"                # Obsidian
 #---------------------
 install_winget "Git.Git"                          # Git
 install_winget "bmatzelle.Gow"                    # Linux Aliases
-install_winget "Microsoft.PowerShell"             # Pwsh : Powershell 7
 install_winget "KhronosGroup.VulkanSDK"           # Vulkan
 install_winget "Microsoft.VisualStudioCode"       # VS Code
 install_winget "Starship.Starship"                # Terminal prompt
@@ -66,20 +61,38 @@ install_winget "RazerInc.RazerInstaller"          # Razer Lights
 ### MANUALLY : DOWNLOAD + INSTALL
 ######################################################
 
-function install_url ($tag, $url) {
-    $tmp_file = "${env:TEMP}/${tag}.exe"
-    $ProgressPreference = 'SilentlyContinue'
-    Invoke-WebRequest -URI $url -OutFile $tmp_file
-    ./$tmp_file
+# Download to temp file
+function temp_download ([string]$url, [string]$filename, [string]$ext) {
+    $tmp_file = path_to_unix "${env:TEMP}/${filename}.${ext}";
+    if ($PSVersionTable.PSVersion.Major -lt 7) {
+        $ProgressPreference = "SilentlyContinue"
+    }
+    Invoke-WebRequest -URI $url -OutFile $tmp_file;
+    return $tmp_file
 }
 
-install_url "clip" "https://download.clipgrab.org/clipgrab-3.9.11-dotinstaller.exe"
-# install_url "tosibox" "https://downloads.tosibox.com/downloads/tbsetup.exe"
-# install_url "qt" "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe"
+temp_download "https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip" "FiraCode" "zip"
+unzip -o "${env:TEMP}/FiraCode.zip"
+explorer.exe "${env:TEMP}/FiraCode"
+
+temp_download "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/FiraCode.zip" "FiraCodeNF" "zip"
+unzip -o "${env:TEMP}/FiraCodeNF.zip"
+explorer.exe "${env:TEMP}/FiraCodeNF"
+
+temp_download "https://download.clipgrab.org/clipgrab-3.9.11-dotinstaller.exe" "ClipGrab" "exe"
+& "${env:TEMP}/ClipGrab.exe"
 
 
 ######################################################
-### REG Stuff
+### POWERSHELL MODULES
+######################################################
+
+Install-Module z -AllowClobber
+Install-Module posh-git -AllowClobber
+
+
+######################################################
+### REGISTRY
 ######################################################
 
 function add_reg_dword ($path, $key, $val) {
