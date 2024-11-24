@@ -16,8 +16,12 @@ install_winget "Win.QuickLook"                    # QuickLook  : macos-like Prev
 install_winget "voidtools.Everything"             # Everything : The best file searcher
 install_winget "voidtools.Everything.Cli"         # Everything : The best file searcher
 install_winget "Flow-Launcher.Flow-Launcher"      # Laucher    : Spotlight/Alfred like
-install_winget "7zip.7zip"                        # 7Zip
 install_winget "Microsoft.PowerToys"              # PowerToys
+install_winget "7zip.7zip"                        # 7Zip
+
+# 7zip : Double-Click Simply Extract
+New-PSDrive -PSProvider registry -Root HKEY_CLASSES_ROOT -Name HKCR
+New-Item -path "hkcr:\Applications\7zG.exe\shell\open\command" -value "`"${env:ProgramFiles}/7-Zip/7zG.exe`" x `"%1`" -o* -aou" -Force
 
 # Media
 #---------------------
@@ -130,13 +134,12 @@ install_capabilites "Language.OCR"
 
 
 ######################################################
-### LINK
+### LINKs
 ######################################################
 
 function lns ([string]$to, [string]$from) {
     New-Item -Path "$to" -ItemType SymbolicLink -Value "$from" -Force
 }
 
-$prefix = ("", "OneDrive")[$true]
-$docs_pwsh = "$home/$prefix/Documents/PowerShell"
-lns "./profile.ps1" "$docs_pwsh/Microsoft.PowerShell_profile.ps1"
+$documents = ([Environment]::GetFolderPath("MyDocuments"))
+lns "./profile.ps1" "$documents/PowerShell/Microsoft.PowerShell_profile.ps1"

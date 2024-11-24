@@ -1,5 +1,5 @@
-# win-dotfiles
-> Windows dotfiles with a strong linux flavor
+# win dotfiles
+> My windows dotfiles with a strong linux flavor
 
 ## What does `Install.ps1` do?
 ...
