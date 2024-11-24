@@ -1,60 +1,129 @@
-# SCOOP
-$env:PATH += ";${env:UserProfile}/scoop/shims"
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-Invoke-RestMethod get.scoop.sh | Invoke-Expression
-## Add 'sources'
-@("extras", "nerd-fonts") | ForEach-Object { scoop bucket add $_ }
-## Cli - tools
-scoop install sudo git pwsh gow
-## Cli - modules
-scoop install z posh-git oh-my-posh
-## Apps - dev
-scoop install 7zip vscode meld zeal powertoys
-## Apps - sys
-scoop install ditto quicklook eartrumpet everything everything-cli rufus
-## Apps - text
-scoop install sumatrapdf notion
-## Apps - media
-scoop install blender spotify handbrake obs-studio
-## Apps - internet
-scoop install min googlechrome microsoft-teams zoom whatsapp vncviewer teamviewer
-## Fonts
-sudo scoop install -g FiraCode FiraCode-NF-Mono
 
-# CHOCO
-$env:PATH += ";${env:ProgramData}/chocolatey/bin/"
-Set-ExecutionPolicy Bypass
-Invoke-WebRequest https://chocolatey.org/install.ps1 -UseBasicParsing | Invoke-Expression
-## Enable auto accept
-choco feature enable -n allowGlobalConfirmation
-## Apps - office
-sudo choco install sparkmail clipgrab icloud office365business visualstudio2019community
-## Apps - media
-sudo choco install k-litecodecpack-standard itch steam razer-synapse-3
+## sudo is now a native feature of windows 11 24H2
+## check how to activate it from this script
+#### FIND REPLACES FOR:
+#### --> scoop install z posh-git oh-my-posh
+#### --> sudo scoop install -g FiraCode FiraCode-NF-Mono
 
-# WINGET installs: VulkanSDK, NDI-Tools, 3DViewer(store)
-@("KhronosGroup.VulkanSDK", "NewTek.NDI5Tools", "9NBLGGH42THS") | ForEach-Object { winget install --id "$_" -e }
+######################################################
+### WINGET Packages
+######################################################
 
-# MANUALLY : DOWNLOAD + INSTALL
-function installFromUrl ($tag, $url) { $tmpFile = "${env:TEMP}\${tag}.exe"; Invoke-WebRequest -URI $url -OutFile $tmpFile; ./$tmpFile }
-installFromUrl "tosibox" "https://downloads.tosibox.com/downloads/tbsetup.exe"
-installFromUrl "qt" "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe"
+function install_winget($package) {
+    winget install --disable-interactivity --accept-package-agreements --accept-source-agreements -e --id "$package"
+}
 
-# REG Stuff
-function addRegDword ($path, $key, $val) { sudo REG ADD $path /v $key /t REG_DWORD /d $val /f }
+# OS Utils
+#---------------------
+install_winget "Ditto.Ditto"                      # Ditto      : Clipboard History
+install_winget "Win.QuickLook"                    # QuickLook  : macos-like Preview
+install_winget "voidtools.Everything"             # Everything : The best file searcher
+install_winget "voidtools.Everything.Cli"         # Everything : The best file searcher
+install_winget "Flow-Launcher.Flow-Launcher"      # Laucher    : Spotlight/Alfred like
+install_winget "7zip.7zip"                        # 7Zip
+install_winget "Microsoft.PowerToys"              # PowerToys
+
+# Media
+#---------------------
+install_winget "Rufus.Rufus"                      # To burn ISOs onto USBs
+install_winget "CodecGuide.K-LiteCodecPack.Full"  # KLite
+install_winget "9NBLGGH42THS"                     # 3D Previewer
+install_winget "BlenderFoundation.Blender"        # Blender
+install_winget "HandBrake.HandBrake"              # HandBrake : Video Coder
+install_winget "OBSProject.OBSStudio"             # OBS Studio
+
+# Communications
+#---------------------
+install_winget "XPFCS9QJBKTHVZ"                   # Spark Email
+install_winget "Microsoft.Teams"                  # MS Teams
+install_winget "TeamViewer.TeamViewer"            # TeamViewer
+
+# Information
+#---------------------
+install_winget "SumatraPDF.SumatraPDF"            # Sumatra : PDF Reader
+install_winget "Zen-Team.Zen-Browser.Optimized"   # Zen Browser
+install_winget "Notion.Notion"                    # Notion
+install_winget "Obsidian.Obsidian"                # Obsidian
+
+# Dev
+#---------------------
+install_winget "Git.Git"                          # Git
+install_winget "bmatzelle.Gow"                    # Linux Aliases
+install_winget "Microsoft.PowerShell"             # Pwsh : Powershell 7
+install_winget "KhronosGroup.VulkanSDK"           # Vulkan
+install_winget "Microsoft.VisualStudioCode"       # VS Code
+install_winget "Starship.Starship"                # Terminal prompt
+install_winget "gsass1.NTop"                      # htop for Windows
+
+# Personal
+#---------------------
+install_winget "Apple.iCloud"                     # iCloud
+install_winget "Valve.Steam"                      # Steam
+install_winget "RazerInc.RazerInstaller"          # Razer Lights
+
+
+######################################################
+### MANUALLY : DOWNLOAD + INSTALL
+######################################################
+
+function install_url ($tag, $url) {
+    $tmp_file = "${env:TEMP}/${tag}.exe"
+    $ProgressPreference = 'SilentlyContinue'
+    Invoke-WebRequest -URI $url -OutFile $tmp_file
+    ./$tmp_file
+}
+
+install_url "clip" "https://download.clipgrab.org/clipgrab-3.9.11-dotinstaller.exe"
+# install_url "tosibox" "https://downloads.tosibox.com/downloads/tbsetup.exe"
+# install_url "qt" "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe"
+
+
+######################################################
+### REG Stuff
+######################################################
+
+function add_reg_dword ($path, $key, $val) {
+    sudo REG ADD $path /v $key /t REG_DWORD /d $val /f
+}
+
 $IsLaptop = ($null -ne (Get-CimInstance -Class win32_battery))
 $PowerSettingsPath = "HKLM\SYSTEM\CurrentControlSet\Control\Power\PowerSettings"
 
-## Disable telemetry
+# Disable telemetry
 Set-Service DiagTrack -StartupType Disabled
-addRegDword "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 0
+add_reg_dword "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 0
 
-## Only on laptops
-if ($IsLaptop) { 
-    ### Enable 'Hybernate After'
-    addRegDword "${PowerSettingsPath}\238C9FA8-0AAD-41ED-83F4-97BE242C8F20\9d7815a6-7ee4-497e-8888-515a05f02364" "Attributes" 2
+# Only on laptops
+if ($IsLaptop) {
+    # Enable 'Hybernate After'
+    $hibernate_key = "${PowerSettingsPath}\238C9FA8-0AAD-41ED-83F4-97BE242C8F20\9d7815a6-7ee4-497e-8888-515a05f02364"
+    add_reg_dword $hibernate_key "Attributes" 2
 }
 
-# UTILITIES
-## Enable OCR for all available languages
-Get-WindowsCapability -Online | Where-Object { $_.Name -Like 'Language.OCR*' } | ForEach-Object { $_ | Add-WindowsCapability -Online }
+
+######################################################
+### CAPABILITIES
+######################################################
+
+function install_capabilites($name) {
+    $caps = Get-WindowsCapability -Online | Where-Object { $_.Name -Like "*$name*" }
+    foreach ($cap in $caps) {
+        $cap | Add-WindowsCapability -Online
+    }
+}
+
+# Enable OCR for all available languages
+install_capabilites "Language.OCR"
+
+
+######################################################
+### LINK
+######################################################
+
+function lns ([string]$to, [string]$from) {
+    New-Item -Path "$to" -ItemType SymbolicLink -Value "$from" -Force
+}
+
+$prefix = ("", "OneDrive")[$true]
+$docs_pwsh = "$home/$prefix/Documents/PowerShell"
+lns "./profile.ps1" "$docs_pwsh/Microsoft.PowerShell_profile.ps1"
